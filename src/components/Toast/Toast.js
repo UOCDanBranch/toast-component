@@ -1,15 +1,17 @@
-import React from 'react';
+import React from "react";
 import {
   AlertOctagon,
   AlertTriangle,
   CheckCircle,
   Info,
   X,
-} from 'react-feather';
+} from "react-feather";
 
-import VisuallyHidden from '../VisuallyHidden';
+import { ToastContext } from "../ToastProvider";
 
-import styles from './Toast.module.css';
+import VisuallyHidden from "../VisuallyHidden";
+
+import styles from "./Toast.module.css";
 
 const ICONS_BY_VARIANT = {
   notice: Info,
@@ -18,18 +20,35 @@ const ICONS_BY_VARIANT = {
   error: AlertOctagon,
 };
 
-function Toast() {
+function Toast({ variant = "notice", id, children }) {
+  const { removeToast } = React.useContext(ToastContext);
+
+  // Validate variant prop against defined variants
+  if (!Object.keys(ICONS_BY_VARIANT).includes(variant)) {
+    throw new Error(
+      `Unexpected toast variant ${variant}. Valid variants are ${Object.keys(
+        ICONS_BY_VARIANT
+      )}`
+    );
+  }
+
+  const Icon = ICONS_BY_VARIANT[variant];
   return (
-    <div className={`${styles.toast} ${styles.notice}`}>
+    <div className={`${styles.toast} ${styles[variant]}`}>
       <div className={styles.iconContainer}>
-        <Info size={24} />
+        <Icon size={24} />
       </div>
       <p className={styles.content}>
-        16 photos have been uploaded
+        <VisuallyHidden>{variant} -</VisuallyHidden>
+        {children}
       </p>
-      <button className={styles.closeButton}>
+      <button
+        className={styles.closeButton}
+        onClick={(event) => removeToast(id)}
+        aria-label="Dismiss message"
+        aria-live="off"
+      >
         <X size={24} />
-        <VisuallyHidden>Dismiss message</VisuallyHidden>
       </button>
     </div>
   );
